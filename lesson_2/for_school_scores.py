@@ -4,25 +4,15 @@ school_scores = [{ 'school_class': '4a', 'scores': [3, 4, 4, 5, 2] },
 ]
 
 def get_average_class_scores():
-    average_class_scores = []
+    all_school_scores = []
     for school_class in school_scores:
         class_scores = school_class.get('scores')
-        if class_scores:
-            average_class_score = sum(class_scores) / len(class_scores)
-            average_class_scores.append(average_class_score)
-        else:
-            average_class_score = None
+        average_class_score = sum(class_scores) / len(class_scores)
+        all_school_scores += class_scores
+        print(f"Class '{school_class.get('school_class')}': {average_class_score or 'No scores available'}")
 
-        print(f"Class '{school_class.get('school_class', 'Noname class')}': {average_class_score or 'No scores available'}")
-    
-    return average_class_scores
+    average_school_score = sum(all_school_scores) / len(all_school_scores)
+    print(f"All school classes: {average_school_score}")
 
-def get_average_school_score(average_class_scores):
-    if average_class_scores:
-        average_score = sum(average_class_scores) / len(average_class_scores)
-    else:
-        average_score = None
-    print(f"All school classes: {average_score or 'No scores available'}")
 
-average_class_scores = get_average_class_scores()
-average_school_score = get_average_school_score(average_class_scores)
+get_average_class_scores()

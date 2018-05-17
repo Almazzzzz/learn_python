@@ -8,10 +8,9 @@ def string_comparison(first_str, second_str):
             return 2
 
 def input_strings():
-    while True:
-        first_str = input('Enter the first string: ')
-        second_str = input('Enter the second string: ')
-        return first_str, second_str
+    first_str = input('Enter the first string: ')
+    second_str = input('Enter the second string: ')
+    return first_str, second_str
 
 first_str, second_str = input_strings()
 result = string_comparison(first_str, second_str)

@@ -11,11 +11,15 @@ def get_job(age):
 
 def input_age():
     while True:
-        age = int(input('Enter your age: '))
-        if age > 0:
-            return age
-        else:
+        try:
+            age = int(input('Enter your age: '))
+            if age > 0:
+                return age
+            else:
+                print('Wrong value. Try again.')
+        except ValueError:
             print('Wrong value. Try again.')
+
 
 age = input_age()
 job = get_job(age)
