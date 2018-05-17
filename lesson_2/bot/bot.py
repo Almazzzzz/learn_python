@@ -1,3 +1,4 @@
+import config
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import ephem
 import logging
@@ -11,8 +12,7 @@ logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s',
 
 
 def main():
-    mybot = Updater('535442374:AAFD2sWosXO36zxRxG95FJ9OM7y0sL25aHc',
-                    request_kwargs=PROXY)
+    mybot = Updater(config.bot_api_key, request_kwargs=PROXY)
 
     dp = mybot.dispatcher
     dp.add_handler(CommandHandler('start', greet_user))
@@ -36,7 +36,7 @@ def get_constellation(bot, update, args):
             planet = getattr(ephem, planet_name)()
             planet.compute()
             constellation = ephem.constellation(planet)
-            text = f'{planet_name} сейчас находится' \
+            text = f'{planet_name} сейчас находится ' \
                    f'в созвездии {constellation[-1]}'
         except AttributeError:
             text = 'Такой планеты не существует'
