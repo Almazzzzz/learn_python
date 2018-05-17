@@ -1,13 +1,14 @@
 def get_job(age):
-    if age in range(0,7):
+    if age in range(0, 7):
         job = 'Kindergarten'
-    elif age in range(7,18):
+    elif age in range(7, 18):
         job = 'School'
-    elif age in range(18,24):
+    elif age in range(18, 24):
         job = 'University'
     else:
         job = 'Try to get a job'
     return job
+
 
 def input_age():
     while True:

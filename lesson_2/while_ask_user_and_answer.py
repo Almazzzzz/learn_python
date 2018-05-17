@@ -1,8 +1,11 @@
-answers = { 'привет': 'И тебе привет!', 'как дела': 'Лучше всех', 'пока': 'Увидимся!', 'хорошо': 'Вот и славно!' }
+answers = {'привет': 'И тебе привет!', 'как дела': 'Лучше всех',
+           'пока': 'Увидимся!', 'хорошо': 'Вот и славно!'}
 stop_words = ['хорошо', 'пока']
+
 
 def get_answer(question):
     return answers.get(question.lower(), 'Я могу продолжать это вечно...')
+
 
 def ask_user():
     while True:
@@ -12,5 +15,6 @@ def ask_user():
 
         if user_say in stop_words:
             break
+
 
 ask_user()

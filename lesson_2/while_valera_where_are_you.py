@@ -1,7 +1,9 @@
 people = ['Вася', 'Маша', 'Петя', 'Валера', 'Саша', 'Даша']
 
+
 def find_person(name):
     return name == 'Валера'
+
 
 while people:
     name = people.pop()

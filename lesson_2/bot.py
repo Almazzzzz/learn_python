@@ -1,17 +1,18 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import ephem
+import logging
 
 PROXY = {'proxy_url': 'socks5://t1.learn.python.ru:1080',
-    'urllib3_proxy_kwargs': {'username': 'learn', 'password': 'python'}}
+         'urllib3_proxy_kwargs': {'username': 'learn', 'password': 'python'}}
 
-import logging
 logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO,
-                    filename='bot.log'
-                    )
+                    filename='bot.log')
+
 
 def main():
-    mybot = Updater('535442374:AAFD2sWosXO36zxRxG95FJ9OM7y0sL25aHc', request_kwargs=PROXY)
+    mybot = Updater('535442374:AAFD2sWosXO36zxRxG95FJ9OM7y0sL25aHc',
+                    request_kwargs=PROXY)
 
     dp = mybot.dispatcher
     dp.add_handler(CommandHandler('start', greet_user))
@@ -21,10 +22,12 @@ def main():
     mybot.start_polling()
     mybot.idle()
 
+
 def greet_user(bot, update):
     text = 'Вызван /start'
     print(text)
     update.message.reply_text(text)
+
 
 def get_constellation(bot, update, args):
     if args:
@@ -33,7 +36,8 @@ def get_constellation(bot, update, args):
             planet = getattr(ephem, planet_name)()
             planet.compute()
             constellation = ephem.constellation(planet)
-            text = f'{planet_name} сейчас находится в созвездии {constellation[-1]}'
+            text = f'{planet_name} сейчас находится' \
+                   f'в созвездии {constellation[-1]}'
         except AttributeError:
             text = 'Такой планеты не существует'
     else:
@@ -42,9 +46,11 @@ def get_constellation(bot, update, args):
     print(args)
     update.message.reply_text(text)
 
+
 def talk_to_me(bot, update):
-    user_text = update.message.text 
+    user_text = update.message.text
     print(user_text)
     update.message.reply_text(user_text)
+
 
 main()
