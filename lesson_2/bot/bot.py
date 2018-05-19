@@ -52,7 +52,7 @@ def get_constellation(bot, update, args):
 def word_count(bot, update, args):
     if args:
         arg = ' '.join(args)
-        p = re.compile('(^["\'][\w\s]+["\']$)')
+        p = re.compile('(^["\'][\w\s"\']+["\']$)')
         if re.search(p, arg):
             args[:] = [x for x in args if not x == '"']
             text = f'Количество слов: {len(args)}'
