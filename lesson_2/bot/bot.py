@@ -2,6 +2,7 @@ import config
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import ephem
 import logging
+import re
 
 PROXY = {'proxy_url': 'socks5://t1.learn.python.ru:1080',
          'urllib3_proxy_kwargs': {'username': 'learn', 'password': 'python'}}
@@ -17,6 +18,7 @@ def main():
     dp = mybot.dispatcher
     dp.add_handler(CommandHandler('start', greet_user))
     dp.add_handler(CommandHandler('planet', get_constellation, pass_args=True))
+    dp.add_handler(CommandHandler('wordcount', word_count, pass_args=True))
     dp.add_handler(MessageHandler(Filters.text, talk_to_me))
 
     mybot.start_polling()
@@ -46,6 +48,21 @@ def get_constellation(bot, update, args):
     print(args)
     update.message.reply_text(text)
 
+
+def word_count(bot, update, args):
+    if args:
+        arg = ' '.join(args)
+        p = re.compile('(^["\'][\w\s]+["\']$)')
+        if re.search(p, arg):
+            args[:] = [x for x in args if not x == '"']
+            text = f'Количество слов: {len(args)}'
+        else:
+            text = 'Строка не соответствует формату ввода'
+    else:
+        text = 'Вы ввели пустую строку'
+
+    print(args)
+    update.message.reply_text(text)
 
 def talk_to_me(bot, update):
     user_text = update.message.text
