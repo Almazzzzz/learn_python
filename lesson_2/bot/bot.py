@@ -11,6 +11,15 @@ logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO,
                     filename='bot.log')
 
+OPERATIONS = {
+    '+': lambda x, y: x + y,
+    '-': lambda x, y: x - y,
+    '*': lambda x, y: x * y,
+    '/': lambda x, y: x / y
+}
+
+OPERATORS = ['*', '/', '+', '-']
+
 
 def main():
     mybot = Updater(config.bot_api_key, request_kwargs=PROXY)
@@ -19,6 +28,7 @@ def main():
     dp.add_handler(CommandHandler('start', greet_user))
     dp.add_handler(CommandHandler('planet', get_constellation, pass_args=True))
     dp.add_handler(CommandHandler('wordcount', word_count, pass_args=True))
+    dp.add_handler(CommandHandler('calc', calculator, pass_args=True))
     dp.add_handler(MessageHandler(Filters.text, talk_to_me))
 
     mybot.start_polling()
@@ -63,6 +73,60 @@ def word_count(bot, update, args):
 
     print(args)
     update.message.reply_text(text)
+
+def calculator(bot, update, args):
+    if args:
+        arg_string = ''.join(args)
+        p = re.compile('^(([1-9]\d*|\d)[\+\-\*\/])+(([1-9]\d*|\d)\=)$')
+        if re.search(p, arg_string):
+            digits_list, operations_list = get_calculation_data(arg_string)
+            print(arg_string, digits_list, operations_list)
+            try:
+                text = calculate(digits_list, operations_list)
+            except ZeroDivisionError:
+                text = 'На ноль делить нельзя'
+        else:
+            print(args)
+            text = 'Строка не соответствует формату ввода'
+    else:
+        print(args)
+        text = 'Вы ввели пустую строку'
+
+    update.message.reply_text(text)
+
+
+def get_calculation_data(arg_string):
+    digit_split_pattern = re.compile('[\+\-\*\/\=]')
+    operation_split_pattern = re.compile('\d+')
+    digits_list = re.split(digit_split_pattern, arg_string)
+    digits_list = list(filter(None, digits_list))
+    digits_list[:] = [int(x) for x in digits_list]
+    operations_list = re.split(operation_split_pattern, arg_string)
+    operations_list = list(filter(None, operations_list))
+
+    return digits_list, operations_list
+
+
+def calculate(digits_list, operations_list):
+    while not operations_list[0] == '=':
+        for operator in OPERATORS:
+            i = operations_list.index(operator) if operator in operations_list else None
+            if i is not None:
+                break
+            else:
+                continue
+        second_number = digits_list.pop(i+1)
+        first_number = digits_list.pop(i)
+        operation = operations_list.pop(i)
+        middle_result = calc(operation, first_number, second_number)
+        digits_list.insert(i, middle_result)
+        print(middle_result, digits_list, operations_list, first_number, operation, second_number)
+
+    return digits_list[0]
+
+
+def calc(action, x, y):
+    return OPERATIONS[action](x, y)
 
 def talk_to_me(bot, update):
     user_text = update.message.text
