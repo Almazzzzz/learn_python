@@ -28,7 +28,7 @@ def main():
     dp.add_handler(CommandHandler('start', greet_user))
     dp.add_handler(CommandHandler('planet', get_constellation, pass_args=True))
     dp.add_handler(CommandHandler('wordcount', word_count, pass_args=True))
-    dp.add_handler(CommandHandler('calc', calculator, pass_args=True))
+    dp.add_handler(CommandHandler('calc', numbers_calculator, pass_args=True))
     dp.add_handler(MessageHandler(Filters.text, talk_to_me))
 
     my_bot.start_polling()
@@ -75,22 +75,10 @@ def word_count(bot, update, args):
     update.message.reply_text(text)
 
 
-def calculator(bot, update, args):
+def numbers_calculator(bot, update, args):
     if args:
-        arg_string = ''.join(args)
-        p = re.compile(r'^((0|(0\.\d+)|((0\.)|([1-9]\d*\.)\d+)|([1-9]\d*))'
-                       r'[\+\-\*\/])+((0|(0\.\d+)|((0\.)|([1-9]\d*\.)\d+)|'
-                       r'([1-9]\d*))\=)$')
-        if re.fullmatch(p, arg_string):
-            digits_list, operations_list = get_calculation_data(arg_string)
-            print(arg_string, digits_list, operations_list)
-            try:
-                text = calculate(digits_list, operations_list)
-            except ZeroDivisionError:
-                text = 'На ноль делить нельзя'
-        else:
-            print(args)
-            text = 'Строка не соответствует формату ввода'
+        text = numbers_calculator_body(args)
+        print(text)
     else:
         print(args)
         text = 'Вы ввели пустую строку'
@@ -98,7 +86,26 @@ def calculator(bot, update, args):
     update.message.reply_text(text)
 
 
-def get_calculation_data(arg_string):
+def numbers_calculator_body(args):
+    arg_string = ''.join(args)
+    p = re.compile(r'^((0|(0\.\d+)|((0\.)|([1-9]\d*\.)\d+)|([1-9]\d*))'
+                   r'[\+\-\*\/])+((0|(0\.\d+)|((0\.)|([1-9]\d*\.)\d+)|'
+                   r'([1-9]\d*))\=)$')
+    if re.fullmatch(p, arg_string):
+        digits_list, operations_list = get_numbers_calculation_data(arg_string)
+        print(arg_string, digits_list, operations_list)
+        try:
+            text = calculate(digits_list, operations_list)
+        except ZeroDivisionError:
+            text = 'На ноль делить нельзя'
+    else:
+        print(args)
+        text = 'Строка не соответствует формату ввода'
+
+    return text
+
+
+def get_numbers_calculation_data(arg_string):
     digit_split_pattern = re.compile(r'[\+\-\*\/\=]')
     digits_list = re.split(digit_split_pattern, arg_string)
     digits_list = list(filter(None, digits_list))
