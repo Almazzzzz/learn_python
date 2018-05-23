@@ -22,17 +22,17 @@ OPERATORS = ['*', '/', '+', '-']
 
 
 def main():
-    mybot = Updater(config.bot_api_key, request_kwargs=PROXY)
+    my_bot = Updater(config.bot_api_key, request_kwargs=PROXY)
 
-    dp = mybot.dispatcher
+    dp = my_bot.dispatcher
     dp.add_handler(CommandHandler('start', greet_user))
     dp.add_handler(CommandHandler('planet', get_constellation, pass_args=True))
     dp.add_handler(CommandHandler('wordcount', word_count, pass_args=True))
     dp.add_handler(CommandHandler('calc', calculator, pass_args=True))
     dp.add_handler(MessageHandler(Filters.text, talk_to_me))
 
-    mybot.start_polling()
-    mybot.idle()
+    my_bot.start_polling()
+    my_bot.idle()
 
 
 def greet_user(bot, update):
