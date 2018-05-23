@@ -29,6 +29,7 @@ def main():
     dp.add_handler(CommandHandler('planet', get_constellation, pass_args=True))
     dp.add_handler(CommandHandler('wordcount', word_count, pass_args=True))
     dp.add_handler(CommandHandler('calc', numbers_calculator, pass_args=True))
+    dp.add_handler(CommandHandler('text_calc', text_calculator, pass_args=True))
     dp.add_handler(MessageHandler(Filters.text, talk_to_me))
 
     my_bot.start_polling()
@@ -119,6 +120,17 @@ def to_digits(string):
     return float(string) if '.' in string else int(string)
 
 
+def text_calculator(bot, update, args):
+    if args:
+        text = text_calculator_body(args)
+        print(text)
+    else:
+        print(args)
+        text = 'Вы ввели пустую строку'
+
+    update.message.reply_text(text)
+
+
 def calculate(digits_list, operations_list):
     while operations_list:
         for operator in operations_list:
@@ -135,6 +147,58 @@ def calculate(digits_list, operations_list):
               operation, second_number)
 
     return digits_list[0]
+
+
+def text_calculator_body(args):
+    args[:] = [x.lower() for x in args]
+    arg_string = ' '.join(args)
+    p = re.compile(r'^[а-я]+(\sи\s[а-я]+)?(\s[а-я]+(\sна)?\s[а-я]+'
+                   r'(\sи\s[а-я]+)?)+')
+    if re.fullmatch(p, arg_string):
+        digits_list, operations_list = get_text_calculation_data(args)
+        if not digits_list or not operations_list:
+            print(arg_string, digits_list, operations_list)
+            return 'Строка не соответствует формату ввода'
+        try:
+            print(arg_string, digits_list, operations_list)
+            text = calculate(digits_list, operations_list)
+        except ZeroDivisionError:
+            text = 'На ноль делить нельзя'
+    else:
+        print(args)
+        text = 'Строка не соответствует формату ввода'
+    return text
+
+DATA = {'ноль': 0, 'один': 1, 'два': 2, 'три': 3, 'четыре': 4, 'пять': 5,
+        'шесть': 6, 'семь': 7, 'восемь': 7, 'девять': 9, 'десять': 10,
+        'умножить': '*', 'разделить': '/', 'плюс': '+', 'минус': '-',
+        'и': '.', 'на': ''}
+
+
+def get_text_calculation_data(args):
+    digits_list, operations_list = [], []
+    for a in args:
+        arg = DATA.get(a, None)
+        if not arg == None:
+            if isinstance(arg, int) or arg == '.':
+                digits_list.append(arg)
+            elif isinstance(arg, str):
+                operations_list.append(arg)
+        else:
+            return [], []
+
+    operations_list = list(filter(None, operations_list))
+    digits_list[:] = [str(x) for x in digits_list]
+
+    while '.' in digits_list:
+        i = digits_list.index('.')
+        string = ''.join(digits_list[i - 1:i + 2])
+        print(string)
+        digits_list[i - 1:i + 2] = [string, '', '']
+    digits_list = list(filter(None, digits_list))
+    digits_list[:] = [to_digits(x) for x in digits_list]
+
+    return digits_list, operations_list
 
 
 def calc(action, x, y):
