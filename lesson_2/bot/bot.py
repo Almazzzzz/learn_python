@@ -62,7 +62,7 @@ def get_constellation(bot, update, args):
 def word_count(bot, update, args):
     if args:
         arg = ' '.join(args)
-        p = re.compile('(^["\'][\w\s"\']+["\']$)')
+        p = re.compile(r'(^["\'][\w\s"\']+["\']$)')
         if re.search(p, arg):
             args[:] = [x for x in args if not x == '"']
             text = f'Количество слов: {len(args)}'
@@ -74,11 +74,14 @@ def word_count(bot, update, args):
     print(args)
     update.message.reply_text(text)
 
+
 def calculator(bot, update, args):
     if args:
         arg_string = ''.join(args)
-        p = re.compile('^(([1-9]\d*|\d)[\+\-\*\/])+(([1-9]\d*|\d)\=)$')
-        if re.search(p, arg_string):
+        p = re.compile(r'^((0|(0\.\d+)|((0\.)|([1-9]\d*\.)\d+)|([1-9]\d*))'
+                       r'[\+\-\*\/])+((0|(0\.\d+)|((0\.)|([1-9]\d*\.)\d+)|'
+                       r'([1-9]\d*))\=)$')
+        if re.fullmatch(p, arg_string):
             digits_list, operations_list = get_calculation_data(arg_string)
             print(arg_string, digits_list, operations_list)
             try:
@@ -96,37 +99,40 @@ def calculator(bot, update, args):
 
 
 def get_calculation_data(arg_string):
-    digit_split_pattern = re.compile('[\+\-\*\/\=]')
-    operation_split_pattern = re.compile('\d+')
+    digit_split_pattern = re.compile(r'[\+\-\*\/\=]')
     digits_list = re.split(digit_split_pattern, arg_string)
     digits_list = list(filter(None, digits_list))
-    digits_list[:] = [int(x) for x in digits_list]
-    operations_list = re.split(operation_split_pattern, arg_string)
-    operations_list = list(filter(None, operations_list))
+    digits_list[:] = [to_digits(x) for x in digits_list]
+    operations_list = [x for x in arg_string if x in OPERATORS]
 
     return digits_list, operations_list
 
 
+def to_digits(string):
+    return float(string) if '.' in string else int(string)
+
+
 def calculate(digits_list, operations_list):
-    while not operations_list[0] == '=':
-        for operator in OPERATORS:
-            i = operations_list.index(operator) if operator in operations_list else None
-            if i is not None:
+    while operations_list:
+        for operator in operations_list:
+            i = operations_list.index(operator)
+            if operator in ['*', '/']:
                 break
-            else:
-                continue
+
         second_number = digits_list.pop(i+1)
         first_number = digits_list.pop(i)
         operation = operations_list.pop(i)
         middle_result = calc(operation, first_number, second_number)
         digits_list.insert(i, middle_result)
-        print(middle_result, digits_list, operations_list, first_number, operation, second_number)
+        print(middle_result, digits_list, operations_list, first_number,
+              operation, second_number)
 
     return digits_list[0]
 
 
 def calc(action, x, y):
     return OPERATIONS[action](x, y)
+
 
 def talk_to_me(bot, update):
     user_text = update.message.text
