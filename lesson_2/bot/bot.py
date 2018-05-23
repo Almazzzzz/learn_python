@@ -20,6 +20,17 @@ OPERATIONS = {
 
 OPERATORS = ['*', '/', '+', '-']
 
+DICT = {'ноль': 0, 'один': 1, 'два': 2, 'три': 3, 'четыре': 4, 'пять': 5,
+        'шесть': 6, 'семь': 7, 'восемь': 7, 'девять': 9, 'десять': 10,
+        'умножить': '*', 'разделить': '/', 'плюс': '+', 'минус': '-',
+        'и': '.', 'на': ''}
+
+CALCULATION_DATA = {
+    'number': lambda arg_string, args:
+        get_numbers_calculation_data(arg_string),
+    'text': lambda arg_string, args: get_text_calculation_data(args)
+}
+
 
 def main():
     my_bot = Updater(config.bot_api_key, request_kwargs=PROXY)
@@ -29,7 +40,9 @@ def main():
     dp.add_handler(CommandHandler('planet', get_constellation, pass_args=True))
     dp.add_handler(CommandHandler('wordcount', word_count, pass_args=True))
     dp.add_handler(CommandHandler('calc', numbers_calculator, pass_args=True))
-    dp.add_handler(CommandHandler('text_calc', text_calculator, pass_args=True))
+    dp.add_handler(CommandHandler('text_calc',
+                                  text_calculator,
+                                  pass_args=True))
     dp.add_handler(MessageHandler(Filters.text, talk_to_me))
 
     my_bot.start_polling()
@@ -78,7 +91,11 @@ def word_count(bot, update, args):
 
 def numbers_calculator(bot, update, args):
     if args:
-        text = numbers_calculator_body(args)
+        arg_string = ''.join(args)
+        p = re.compile(r'^((0|(0\.\d+)|((0\.)|([1-9]\d*\.)\d+)|([1-9]\d*))'
+                       r'[\+\-\*\/])+((0|(0\.\d+)|((0\.)|([1-9]\d*\.)\d+)|'
+                       r'([1-9]\d*))\=)$')
+        text = calculator_body(p, args, arg_string, 'number')
         print(text)
     else:
         print(args)
@@ -87,14 +104,29 @@ def numbers_calculator(bot, update, args):
     update.message.reply_text(text)
 
 
-def numbers_calculator_body(args):
-    arg_string = ''.join(args)
-    p = re.compile(r'^((0|(0\.\d+)|((0\.)|([1-9]\d*\.)\d+)|([1-9]\d*))'
-                   r'[\+\-\*\/])+((0|(0\.\d+)|((0\.)|([1-9]\d*\.)\d+)|'
-                   r'([1-9]\d*))\=)$')
+def text_calculator(bot, update, args):
+    if args:
+        args[:] = [x.lower() for x in args]
+        arg_string = ' '.join(args)
+        p = re.compile(r'^[а-я]+(\sи\s[а-я]+)?(\s[а-я]+(\sна)?\s[а-я]+'
+                       r'(\sи\s[а-я]+)?)+')
+        text = calculator_body(p, args, arg_string, 'text')
+        print(text)
+    else:
+        print(args)
+        text = 'Вы ввели пустую строку'
+
+    update.message.reply_text(text)
+
+
+def calculator_body(p, args, arg_string, calc_type):
     if re.fullmatch(p, arg_string):
-        digits_list, operations_list = get_numbers_calculation_data(arg_string)
-        print(arg_string, digits_list, operations_list)
+        digits_list, operations_list = get_calculation_data(calc_type,
+                                                            arg_string,
+                                                            args)
+        if not digits_list or not operations_list:
+            print(arg_string, digits_list, operations_list)
+            return 'Строка не соответствует формату ввода'
         try:
             text = calculate(digits_list, operations_list)
         except ZeroDivisionError:
@@ -104,6 +136,10 @@ def numbers_calculator_body(args):
         text = 'Строка не соответствует формату ввода'
 
     return text
+
+
+def get_calculation_data(calc_type, arg_string, args):
+    return CALCULATION_DATA[calc_type](arg_string, args)
 
 
 def get_numbers_calculation_data(arg_string):
@@ -118,17 +154,6 @@ def get_numbers_calculation_data(arg_string):
 
 def to_digits(string):
     return float(string) if '.' in string else int(string)
-
-
-def text_calculator(bot, update, args):
-    if args:
-        text = text_calculator_body(args)
-        print(text)
-    else:
-        print(args)
-        text = 'Вы ввели пустую строку'
-
-    update.message.reply_text(text)
 
 
 def calculate(digits_list, operations_list):
@@ -149,37 +174,11 @@ def calculate(digits_list, operations_list):
     return digits_list[0]
 
 
-def text_calculator_body(args):
-    args[:] = [x.lower() for x in args]
-    arg_string = ' '.join(args)
-    p = re.compile(r'^[а-я]+(\sи\s[а-я]+)?(\s[а-я]+(\sна)?\s[а-я]+'
-                   r'(\sи\s[а-я]+)?)+')
-    if re.fullmatch(p, arg_string):
-        digits_list, operations_list = get_text_calculation_data(args)
-        if not digits_list or not operations_list:
-            print(arg_string, digits_list, operations_list)
-            return 'Строка не соответствует формату ввода'
-        try:
-            print(arg_string, digits_list, operations_list)
-            text = calculate(digits_list, operations_list)
-        except ZeroDivisionError:
-            text = 'На ноль делить нельзя'
-    else:
-        print(args)
-        text = 'Строка не соответствует формату ввода'
-    return text
-
-DATA = {'ноль': 0, 'один': 1, 'два': 2, 'три': 3, 'четыре': 4, 'пять': 5,
-        'шесть': 6, 'семь': 7, 'восемь': 7, 'девять': 9, 'десять': 10,
-        'умножить': '*', 'разделить': '/', 'плюс': '+', 'минус': '-',
-        'и': '.', 'на': ''}
-
-
 def get_text_calculation_data(args):
     digits_list, operations_list = [], []
     for a in args:
-        arg = DATA.get(a, None)
-        if not arg == None:
+        arg = DICT.get(a, None)
+        if arg is not None:
             if isinstance(arg, int) or arg == '.':
                 digits_list.append(arg)
             elif isinstance(arg, str):
