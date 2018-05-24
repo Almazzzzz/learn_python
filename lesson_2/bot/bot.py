@@ -4,6 +4,7 @@ import ephem
 import logging
 import re
 from datetime import datetime, date, time
+import cities_list
 
 PROXY = {'proxy_url': 'socks5://t1.learn.python.ru:1080',
          'urllib3_proxy_kwargs': {'username': 'learn', 'password': 'python'}}
@@ -44,6 +45,7 @@ def main():
     dp.add_handler(CommandHandler('text_calc',
                                   text_calculator,
                                   pass_args=True))
+    dp.add_handler(CommandHandler('goroda', cities_game, pass_args=True))
     dp.add_handler(MessageHandler(Filters.text, talk_to_me))
 
     my_bot.start_polling()
@@ -203,6 +205,57 @@ def get_text_calculation_data(args):
 
 def calc(action, x, y):
     return OPERATIONS[action](x, y)
+
+
+cities = cities_list.cities[:]
+next_city_char = ''
+
+
+def cities_game(bot, update, args):
+    if args:
+        user_city = ' '.join(args).lower()
+        global next_city_char
+        if cities == cities_list.cities:
+            next_city_char = user_city[0]
+
+        if not user_city[0] == next_city_char:
+            text = 'Не на ту букву'
+            update.message.reply_text(text)
+            return
+        if user_city in cities:
+            cities.remove(user_city)
+            char = last_char(user_city)
+            bot_city = next((x for x in cities if x[0] == char), None)
+            if bot_city:
+                cities.remove(bot_city)
+                next_city_char = last_char(bot_city)
+                text = f'{bot_city.capitalize()}, ' \
+                       f'тебе на \'{next_city_char.capitalize()}\''
+            else:
+                text = 'Не могу ничего вспомнить. Ты победил. Поздравляю!'
+        else:
+            if user_city in cities_list.cities:
+                text = 'Уже было'
+            else:
+                text = 'Такого города не существует или я о нем не знаю'
+    else:
+        print(args, text)
+        text = 'Вы ввели пустую строку'
+
+    update.message.reply_text(text)
+
+
+def last_char(word):
+    strange_russian_chars = ['ъ', 'ь', 'ы']
+    char = word[-1]
+    if char in strange_russian_chars:
+        char = word[-2]
+    elif char == 'й':
+        char = 'и'
+    else:
+        char = char
+
+    return char
 
 
 def talk_to_me(bot, update):
