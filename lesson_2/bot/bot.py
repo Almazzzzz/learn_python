@@ -3,6 +3,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import ephem
 import logging
 import re
+from datetime import datetime, date, time
 
 PROXY = {'proxy_url': 'socks5://t1.learn.python.ru:1080',
          'urllib3_proxy_kwargs': {'username': 'learn', 'password': 'python'}}
@@ -206,8 +207,27 @@ def calc(action, x, y):
 
 def talk_to_me(bot, update):
     user_text = update.message.text
-    print(user_text)
-    update.message.reply_text(user_text)
+    text = next_full_moon(user_text)
+    answer = text or user_text
+
+    print(user_text, answer)
+    update.message.reply_text(answer)
+
+
+def next_full_moon(text):
+    p = re.compile(r'^(Когда\sближайшее\sполнолуние\sпосле\s)'
+                   r'(\d{4}([\/\\\-\.]\d{2}){2}\?)$',
+                   re.IGNORECASE)
+    p_date = re.compile(r'(\d{4}([\/\\\-\.]\d{2}){2})')
+
+    if re.fullmatch(p, text):
+        date = re.search(p_date, text).group(0).replace('-' or '.', '/')
+        answer = ephem.next_full_moon(date)
+        answer = answer.datetime().strftime('%Y/%m/%d %H:%M:%S')
+    else:
+        answer = None
+
+    return answer
 
 
 main()
