@@ -14,11 +14,11 @@ def read_file(file_name):
 
 def write_to_file(file_name):
     with open(file_name, 'w', encoding='utf-8') as f:
-        fieldsnames = ['param', 'value']
+        fieldsnames = ['key', 'value']
         writer = csv.DictWriter(f, fieldsnames, delimiter=';')
         writer.writeheader()
-        for param in person:
-            writer.writerow({'param': param, 'value': person[param]})
+        for key, value in person.items():
+            writer.writerow({'key': key, 'value': value})
 
         print(f'Data was successfully writen to {file_name}')
 
