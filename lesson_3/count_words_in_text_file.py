@@ -6,4 +6,4 @@ def count_words_in_file(file_name):
         print(f'Words in file: {count_words}')
 
 
-count_words_in_file('referat.txt')
+count_words_in_file('data/referat.txt')
