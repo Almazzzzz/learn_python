@@ -1,12 +1,15 @@
+import os
+import requests
 from datetime import date
-from flask import Flask, abort, request
+from flask import Flask, abort, request, render_template
 import config
 from req import get_weather
 from news_list import all_news
 
 city = 'London'
 country = 'uk'
-app = Flask(__name__)
+template_dir = os.path.dirname(__file__)
+app = Flask(__name__, template_folder=template_dir)
 
 
 @app.route('/')
@@ -51,6 +54,26 @@ def news():
         color = 'black'
 
     return f'<h1 style="color: {color}">Новости: <small>{limit}</small></h1>'
+
+
+@app.route('/names')
+def names():
+    url = 'http://api.data.mos.ru/v1/datasets/' \
+          f'2009/rows?api_key={config.data_mos_api_key}'
+    result = requests.get(url)
+
+    try:
+        year = int(request.args.get('year'))
+    except (ValueError, TypeError):
+        year = None
+
+    if result.status_code == 200:
+        names = result.json()
+        if year:
+            names = [name for name in names if name['Cells']['Year'] == year]
+        return render_template('names.html', names=names)
+    else:
+        return f'Ошибка: {result.status_code}'
 
 
 if __name__ == '__main__':

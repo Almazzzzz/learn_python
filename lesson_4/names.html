@@ -1,0 +1,20 @@
+<!doctype html>
+
+<table>
+    <tr>
+        <th>№</th>
+        <th>Имя</th>
+        <th>Год</th>
+        <th>Месяц</th>
+        <th>Число детей</th>
+    </tr>
+    {% for name in names %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ name.Cells.Name }}</td>
+            <td>{{ name.Cells.Year }}</td>
+            <td>{{ name.Cells.Month }}</td>
+            <td>{{ name.Cells.NumberOfPersons }}</td>
+        </tr>
+    {% endfor %}
+</table>
